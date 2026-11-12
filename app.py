@@ -3,6 +3,7 @@
 Start: streamlit run app.py
 """
 
+import json
 import os
 import time
 from datetime import datetime
@@ -63,6 +64,32 @@ if met_sidebar.button("💾 Posities opslaan", use_container_width=True):
     save_positions(bewerkt)
     st.cache_data.clear()
     met_sidebar.success("Posities opgeslagen.")
+
+met_sidebar.subheader("Backup")
+export_posities = bewerkt.dropna(subset=["ticker"])
+met_sidebar.download_button(
+    "📤 Posities exporteren",
+    data=json.dumps({"positions": export_posities.to_dict(orient="records")}, indent=2, ensure_ascii=False),
+    file_name="positions.json",
+    mime="application/json",
+    use_container_width=True,
+    disabled=export_posities.empty,
+)
+import_bestand = met_sidebar.file_uploader("📥 Posities importeren (.json)", type=["json"])
+if import_bestand is not None:
+    try:
+        data = json.loads(import_bestand.getvalue())
+        nieuwe = pd.DataFrame(data["positions"])
+        for kolom in ["ticker", "naam", "aantal", "aankoopkoers", "doelgewicht"]:
+            if kolom not in nieuwe.columns:
+                nieuwe[kolom] = None
+        save_positions(nieuwe)
+        st.cache_data.clear()
+        met_sidebar.success("Posities geïmporteerd.")
+        st.rerun()
+    except Exception as fout:
+        met_sidebar.error(f"Import mislukt: {fout}")
+
 if met_sidebar.button("🔄 Koersen verversen", use_container_width=True):
     st.cache_data.clear()
 if met_sidebar.toggle("Auto-verversing (60 s)", value=False):
@@ -74,7 +101,19 @@ met_sidebar.caption(DISCLAIMER)
 posities = bewerkt.dropna(subset=["ticker"]).copy()
 posities = posities[posities["aantal"].fillna(0) > 0]
 if posities.empty:
-    st.info("Voeg eerst posities toe in de zijbalk (ticker, aantal, aankoopkoers) en klik op opslaan.")
+    st.info(
+        "Je portefeuille is nog leeg — dit is geen voorbeelddata. "
+        "Voeg in de zijbalk je eigen posities toe: **ticker** (bijv. `VWRL.AS`, `ASML.AS`, `AAPL`), "
+        "**aantal** en **aankoopkoers** (in euro's), en klik daarna op **Posities opslaan**. "
+        "Het optionele **doelgewicht %** activeert herbalancerings­signalen."
+    )
+    st.markdown(
+        "**Handig om te weten**\n"
+        "- Gebruik het Yahoo Finance-symbool mét beursachtervoegsel voor Europese fondsen: "
+        "`ASML.AS` (Amsterdam), `VWRL.AS`, `SUSW.AS`; Amerikaanse fondsen zonder achtervoegsel: `AAPL`, `MSFT`.\n"
+        "- In de gehoste versie worden opgeslagen posities gewist bij een herstart van de app; "
+        "maak regelmatig een **export** (zijbalk) en importeer die na een herstart."
+    )
     st.stop()
 
 with st.spinner("Koersen ophalen…"):

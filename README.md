@@ -16,9 +16,11 @@ De app opent automatisch in je browser op `http://localhost:8501`.
 1. **Posities invoeren** — in de zijbalk vul je per positie in:
    - `ticker`: Yahoo Finance-symbool, met beursachtervoegsel voor niet-Amerikaanse fondsen (bijv. `ASML.AS`, `VWRL.AS`, `AAPL`, `TSM`).
    - `naam`: vrije omschrijving.
-   - `aantal` en `aankoopkoers` (in de munteenheid van aankoop).
+   - `aantal` en `aankoopkoers` (in euro's, ook als het fonds in een andere valuta noteert).
    - `doelgewicht %` (optioneel): voor herbalancerings­signalen.
    - Klik daarna op **Posities opslaan** (wordt bewaard in `positions.json`).
+
+   Bij een nieuwe installatie is de portefeuille leeg; er wordt geen voorbeelddata getoond. Met **exporteren/importeren** in de zijbalk maak je een JSON-backup of verplaats je je posities tussen je lokale en gehoste versie.
 2. **Dagelijks raadplegen** — de startpagina toont totale waarde, dagmutatie, ongeerealiseerd resultaat, de stavaza en grafieken. Koersen worden automatisch opgehaald en 5 minuten gecachd; verversen kan handmatig of automatisch (60 s).
 3. **Signalen** — vaste regels voor concentratie (>20% gewicht), grote verlies/winst-posities, dagbewegingen (>3%), afwijking van doelgewicht (≥10%) en spreiding (<5 posities).
 4. **AI-toelichting** — vul je Mistral API-sleutel in (of exporteer `MISTRAL_API_KEY`). De sleutel blijft lokaal in de browser­sessie en wordt alleen naar `api.mistral.ai` gestuurd.

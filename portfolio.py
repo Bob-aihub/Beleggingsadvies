@@ -9,13 +9,7 @@ import yfinance as yf
 
 POSITIONS_FILE = Path(__file__).parent / "positions.json"
 
-DEFAULT_POSITIONS = {
-    "positions": [
-        {"ticker": "VWRL.AS", "naam": "Vanguard FTSE All-World", "aantal": 20, "aankoopkoers": 115.0, "doelgewicht": 60},
-        {"ticker": "ASML.AS", "naam": "ASML Holding", "aantal": 5, "aankoopkoers": 650.0, "doelgewicht": 25},
-        {"ticker": "AAPL", "naam": "Apple Inc.", "aantal": 10, "aankoopkoers": 180.0, "doelgewicht": 15},
-    ]
-}
+DEFAULT_POSITIONS = {"positions": []}
 
 
 def load_positions() -> pd.DataFrame:
@@ -25,6 +19,16 @@ def load_positions() -> pd.DataFrame:
         data = DEFAULT_POSITIONS
     df = pd.DataFrame(data["positions"])
     kolommen = ["ticker", "naam", "aantal", "aankoopkoers", "doelgewicht"]
+    if df.empty:
+        return pd.DataFrame(
+            {
+                "ticker": pd.Series(dtype="str"),
+                "naam": pd.Series(dtype="str"),
+                "aantal": pd.Series(dtype="float"),
+                "aankoopkoers": pd.Series(dtype="float"),
+                "doelgewicht": pd.Series(dtype="float"),
+            }
+        )
     for kolom in kolommen:
         if kolom not in df.columns:
             df[kolom] = None
