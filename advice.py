@@ -156,7 +156,3 @@ def ai_toelichting(pf: pd.DataFrame, api_key: str) -> str:
     response.raise_for_status()
     data = response.json()
     return data["choices"][0]["message"]["content"].strip()
-
-
-def haal_api_sleutel() -> str:
-    return os.environ.get("MISTRAL_API_KEY", "")

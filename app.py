@@ -3,13 +3,14 @@
 Start: streamlit run app.py
 """
 
+import os
 import time
 from datetime import datetime
 
 import pandas as pd
 import streamlit as st
 
-from advice import DISCLAIMER, ai_toelichting, haal_api_sleutel, regel_signalen
+from advice import DISCLAIMER, ai_toelichting, regel_signalen
 from portfolio import haal_portefeuille, load_positions, save_positions
 
 st.set_page_config(page_title="Beleggingsdashboard", page_icon="📈", layout="wide")
@@ -26,6 +27,15 @@ KOLOM_CONFIG = {
 @st.cache_data(ttl=300, show_spinner=False)
 def gecachde_koersen(posities: list[dict]) -> pd.DataFrame:
     return haal_portefeuille(pd.DataFrame(posities))
+
+
+def _api_sleutel() -> str:
+    try:
+        if "MISTRAL_API_KEY" in st.secrets:
+            return st.secrets["MISTRAL_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("MISTRAL_API_KEY", "")
 
 
 def eur(waarde: float) -> str:
@@ -137,7 +147,7 @@ else:
             st.markdown(f"💡 **{signaal['titel']}** — {signaal['tekst']}")
 
 st.subheader("🤖 AI-toelichting")
-api_sleutel = haal_api_sleutel() or st.session_state.get("mistral_sleutel", "")
+api_sleutel = _api_sleutel() or st.session_state.get("mistral_sleutel", "")
 if not api_sleutel:
     st.session_state["mistral_sleutel"] = st.text_input(
         "Mistral API-sleutel (of zet MISTRAL_API_KEY in je omgeving)", type="password"
