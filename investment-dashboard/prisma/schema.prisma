@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Snapshot {
+  id           String             @id @default(cuid())
+  date         DateTime
+  source       String
+  fileName     String?
+  exportDate   DateTime?
+  totalValue   Float
+  cash         Float
+  positions    SnapshotPosition[]
+  transactions Transaction[]
+  createdAt    DateTime           @default(now())
+}
+
+model SnapshotPosition {
+  id            String   @id @default(cuid())
+  snapshotId    String
+  snapshot      Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  name          String
+  isin          String?
+  ticker        String?
+  exchange      String?
+  assetClass    String   @default("onbekend")
+  sector        String   @default("onbekend")
+  region        String   @default("onbekend")
+  quantity      Float
+  purchasePrice Float?
+  currentPrice  Float?
+  currency      String   @default("EUR")
+  marketValue   Float?
+  returnPct     Float?
+  dividend      Float?
+  isEtf         Boolean  @default(false)
+  raw           String?
+}
+
+model Transaction {
+  id         String    @id @default(cuid())
+  date       DateTime
+  type       String
+  ticker     String
+  name       String?
+  quantity   Float
+  price      Float
+  currency   String    @default("EUR")
+  fees       Float?
+  note       String?
+  snapshotId String?
+  snapshot   Snapshot? @relation(fields: [snapshotId], references: [id])
+  createdAt  DateTime  @default(now())
+}
+
+model Prediction {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  date              DateTime
+  ticker            String
+  name              String?
+  expectedPrice     Float
+  expectedPriceLow  Float?
+  expectedPriceHigh  Float?
+  horizon           String
+  targetDate        DateTime?
+  rationale         String
+  assumptions       String?
+  origin            String    @default("MANUAL")
+  status            String    @default("OPEN")
+  evaluatedAt       DateTime?
+  actualPrice       Float?
+  sources           Source[]
+}
+
+model Source {
+  id           String      @id @default(cuid())
+  predictionId String?
+  prediction   Prediction? @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  organization String
+  title        String
+  date         DateTime?
+  type         String
+  url          String
+}
+
+model NewsItem {
+  id          String   @id @default(cuid())
+  ticker      String?
+  title       String
+  summary     String?
+  source      String
+  url         String
+  publishedAt DateTime
+  sentiment   String?
+  fetchedAt   DateTime @default(now())
+}
+
+model ExternalCache {
+  key       String   @id
+  payload   String
+  fetchedAt DateTime
+}
+
+model Setting {
+  key   String @id
+  value String
+}
