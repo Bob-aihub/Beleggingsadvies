@@ -34,6 +34,12 @@ async function snapshotAt(dateIso, priceFactor, cash) {
 }
 
 async function main() {
+  const existing = await prisma.snapshot.count();
+  if (existing > 0 && process.env.FORCE_SEED !== "1") {
+    console.log(`Database bevat al ${existing} snapshot(s) — seed overgeslagen. Gebruik FORCE_SEED=1 om te overschrijven (wist bestaande data).`);
+    return;
+  }
+
   await prisma.snapshotPosition.deleteMany();
   await prisma.snapshot.deleteMany();
   await prisma.transaction.deleteMany();
