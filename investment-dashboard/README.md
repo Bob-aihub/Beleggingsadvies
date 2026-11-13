@@ -47,6 +47,35 @@ npm run dev                 # http://localhost:3000
 Productiebuild: `npm run build && npm start`.
 Tests: `npm test` (vitest).
 
+### Deployen op Vercel (gratis)
+
+Op Vercel is het bestandssysteem tijdelijk; SQLite werkt daar niet. De app gebruikt op
+Vercel daarom PostgreSQL via een gratis Neon-database (of Vercel Postgres).
+
+1. Maak een gratis database aan op [neon.tech](https://neon.tech) (of gebruik Vercel
+   Postgres) en kopieer de connection string, bijv.
+   `postgresql://user:password@host/dbname?sslmode=require`.
+2. Ga naar [vercel.com](https://vercel.com), log in met GitHub en klik op
+   **Add New… → Project → Import** `Bob-aihub/Beleggingsadvies`.
+3. Zet in de projectinstellingen **Root Directory** op `investment-dashboard`.
+4. Voeg onder **Environment Variables** toe:
+   - `DATABASE_URL` = de Neon/Vercel Postgres connection string
+   - optioneel: `FINNHUB_API_KEY`, `FINNHUB_NEWS_API_KEY`, `MISTRAL_API_KEY`
+5. Klik **Deploy**. Het buildcommando (uit `vercel.json`) genereert de Prisma Client voor
+   PostgreSQL en zet het schema automatisch op de database. Zonder API-sleutels start de
+   app in DEMO-modus; seed daarna eenmalig met:
+
+   ```bash
+   DATABASE_URL="<neon-url>" npx prisma db push --schema prisma/schema.postgres.prisma
+   DATABASE_URL="<neon-url>" npm run db:seed
+   ```
+
+   De seed is veilig: met bestaande data doet hij niets tenzij je `FORCE_SEED=1` gebruikt
+   (dat wist bestaande snapshots — dus niet doen op een database met echte imports).
+
+Lokaal blijft SQLite werken zoals hierboven; het cloud-schema staat in
+`prisma/schema.postgres.prisma` en wordt alleen door het Vercel-buildcommando gebruikt.
+
 ### .env-variabelen
 
 | Variabele | Verplicht | Doel |
